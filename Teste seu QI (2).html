@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <base target="_self">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz de Conhecimento Geral</title>
+    <meta name="description" content="Teste seus conhecimentos com 32 questões de conhecimento geral">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3B82F6",
+                        secondary: "#1E40AF",
+                        accent: "#10B981",
+                        admin: "#8B5CF6"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-green-50">
+    <!-- Admin Access Button -->
+    <div class="fixed top-4 right-4 z-50">
+        <button 
+            id="adminAccessBtn"
+            class="bg-admin hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow-lg transition-colors"
+        >
+            <i class="fas fa-cog mr-2"></i>Admin
+        </button>
+    </div>
+
+    <!-- Registration Section -->
+    <section id="registration" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+            <div class="text-center mb-8">
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">Quiz de Conhecimento Geral</h1>
+                <p class="text-gray-600">32 questões para testar seus conhecimentos</p>
+            </div>
+            
+            <form id="registrationForm" class="space-y-6">
+                <div>
+                    <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                        Número de Telefone
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                        placeholder="(11) 99999-9999"
+                    >
+                </div>
+                
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                        E-mail
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email"
+                        required
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                        placeholder="seu@email.com"
+                    >
+                </div>
+                
+                <button 
+                    type="submit"
+                    class="w-full bg-primary hover:bg-secondary text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 transform hover:scale-105"
+                >
+                    Iniciar Quiz
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <p>Ao se cadastrar, você concorda com nossos termos de uso</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quiz Section -->
+    <section id="quiz" class="min-h-screen hidden p-4">
+        <div class="max-w-4xl mx-auto">
+            <!-- Progress Bar -->
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-sm font-medium text-gray-600">Progresso</span>
+                    <span id="progressText" class="text-sm font-medium text-gray-600">1/32</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2">
+                    <div id="progressBar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 3.125%"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
+                <h2 id="questionNumber" class="text-lg font-semibold text-primary mb-2">Questão 1</h2>
+                <p id="questionText" class="text-xl font-medium text-gray-800 mb-6">Carregando pergunta...</p>
+                
+                <div id="optionsContainer" class="space-y-3">
+                    <!-- Options will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between">
+                <button 
+                    id="prevBtn"
+                    class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors opacity-50 cursor-not-allowed"
+                    disabled
+                >
+                    <i class="fas fa-arrow-left mr-2"></i>Anterior
+                </button>
+                
+                <button 
+                    id="nextBtn"
+                    class="bg-primary hover:bg-secondary text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                >
+                    Próxima<i class="fas fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="min-h-screen hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-2xl text-center">
+            <div class="mb-6">
+                <i class="fas fa-trophy text-6xl text-yellow-500 mb-4"></i>
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Quiz Concluído!</h2>
+                <p class="text-gray-600">Confira seu desempenho abaixo</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-lg">
+                    <div class="text-3xl font-bold text-primary" id="correctAnswers">0</div>
+                    <div class="text-gray-600">Acertos</div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-lg">
+                    <div class="text-3xl font-bold text-accent" id="scorePercentage">0%</div>
+                    <div class="text-gray-600">Pontuação</div>
+                </div>
+                <div class="bg-red-50 p-6 rounded-lg">
+                    <div class="text-3xl font-bold text-red-500" id="wrongAnswers">0</div>
+                    <div class="text-gray-600">Erros</div>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <button 
+                    id="restartBtn"
+                    class="w-full bg-primary hover:bg-secondary text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                    <i class="fas fa-redo mr-2"></i>Fazer Novamente
+                </button>
+                
+                <button 
+                    id="reviewBtn"
+                    class="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                >
+                    <i class="fas fa-list mr-2"></i>Revisar Respostas
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Admin Panel -->
+    <section id="adminPanel" class="min-h-screen hidden bg-gray-100 p-4">
+        <div class="max-w-6xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-users-cog text-admin mr-3"></i>
+                        Painel Administrativo
+                    </h2>
+                    <button 
+                        id="closeAdminBtn"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        <i class="fas fa-times mr-2"></i>Fechar
+                    </button>
+                </div>
+
+                <!-- Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+                    <div class="bg-blue-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-primary" id="totalUsers">0</div>
+                        <div class="text-gray-600">Total de Usuários</div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-accent" id="todayUsers">0</div>
+                        <div class="text-gray-600">Cadastros Hoje</div>
+                    </div>
+                    <div class="bg-purple-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-admin" id="weekUsers">0</div>
+                        <div class="text-gray-600">Esta Semana</div>
+                    </div>
+                    <div class="bg-yellow-50 p-4 rounded-lg text-center">
+                        <div class="text-2xl font-bold text-yellow-600" id="monthUsers">0</div>
+                        <div class="text-gray-600">Este Mês</div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex flex-wrap gap-4 mb-6">
+                    <button 
+                        id="exportCSVBtn"
+                        class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        <i class="fas fa-file-csv mr-2"></i>Exportar CSV
+                    </button>
+                    <button 
+                        id="clearDataBtn"
+                        class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        <i class="fas fa-trash mr-2"></i>Limpar Dados
+                    </button>
+                    <button 
+                        id="refreshDataBtn"
+                        class="bg-primary hover:bg-secondary text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        <i class="fas fa-sync mr-2"></i>Atualizar
+                    </button>
+                </div>
+
+                <!-- Users Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full bg-white rounded-lg overflow-hidden shadow">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    #
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Telefone
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    E-mail
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Data de Cadastro
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Pontuação
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Ações
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Users will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- No Data Message -->
+                <div id="noDataMessage" class="text-center py-8 hidden">
+                    <i class="fas fa-database text-4xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 text-lg">Nenhum usuário cadastrado ainda</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Quiz Data
+        const quizQuestions = [
+            {
+                "id": 1,
+                "question": "Qual é o maior oceano do mundo?",
+                "options": ["Oceano Atlântico", "Oceano Índico", "Oceano Pacífico", "Oceano Ártico"],
+                "correct": 2
+            },
+            {
+                "id": 2,
+                "question": "Quantos elementos tem a tabela periódica?",
+                "options": ["108", "118", "128", "138"],
+                "correct": 1
+            },
+            {
+                "id": 3,
+                "question": "Qual é a capital do Brasil?",
+                "options": ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"],
+                "correct": 2
+            },
+            {
+                "id": 4,
+                "question": "Quem escreveu 'Dom Casmurro'?",
+                "options": ["Machado de Assis", "José de Alencar", "Lima Barreto", "Graciliano Ramos"],
+                "correct": 0
+            },
+            {
+                "id": 5,
+                "question": "Qual é o planeta mais próximo do Sol?",
+                "options": ["Vênus", "Marte", "Mercúrio", "Júpiter"],
+                "correct": 2
+            },
+            {
+                "id": 6,
+                "question": "Em que ano o homem pisou na Lua pela primeira vez?",
+                "options": ["1965", "1969", "1972", "1975"],
+                "correct": 1
+            },
+            {
+                "id": 7,
+                "question": "Qual é o animal nacional do Brasil?",
+                "options": ["Onça-pintada", "Arara-azul", "Sabiá-laranjeira", "Jaguatirica"],
+                "correct": 0
+            },
+            {
+                "id": 8,
+                "question": "Quantos lados tem um hexágono?",
+                "options": ["4", "5", "6", "7"],
+                "correct": 2
+            },
+            {
+                "id": 9,
+                "question": "Quem pintou a 'Mona Lisa'?",
+                "options": ["Michelangelo", "Leonardo da Vinci", "Rafael", "Donatello"],
+                "correct": 1
+            },
+            {
+                "id": 10,
+                "question": "Qual é o maior deserto do mundo?",
+                "options": ["Deserto do Saara", "Deserto da Arábia", "Deserto de Gobi", "Antártida"],
+                "correct": 3
+            },
+            {
+                "id": 11,
+                "question": "Quantos continentes existem?",
+                "options": ["5", "6", "7", "8"],
+                "correct": 2
+            },
+            {
+                "id": 12,
+                "question": "Qual é a moeda do Japão?",
+                "options": ["Yuan", "Won", "Yen", "Ringgit"],
+                "correct": 2
+            },
+            {
+                "id": 13,
+                "question": "Quem descobriu o Brasil?",
+                "options": ["Cristóvão Colombo", "Pedro Álvares Cabral", "Vasco da Gama", "Fernão de Magalhães"],
+                "correct": 1
+            },
+            {
+                "id": 14,
+                "question": "Qual é o elemento químico mais abundante no universo?",
+                "options": ["Oxigênio", "Carbono", "Hidrogênio", "Hélio"],
+                "correct": 2
+            },
+            {
+                "id": 15,
+                "question": "Quantos ossos tem o corpo humano adulto?",
+                "options": ["196", "206", "216", "226"],
+                "correct": 1
+            },
+            {
+                "id": 16,
+                "question": "Qual é o maior país do mundo em área territorial?",
+                "options": ["Canadá", "China", "Estados Unidos", "Rússia"],
+                "correct": 3
+            },
+            {
+                "id": 17,
+                "question": "Quem foi o primeiro presidente do Brasil?",
+                "options": ["Getúlio Vargas", "Juscelino Kubitschek", "Deodoro da Fonseca", "Prudente de Morais"],
+                "correct": 2
+            },
+            {
+                "id": 18,
+                "question": "Qual é a velocidade da luz no vácuo?",
+                "options": ["300.000 km/s", "150.000 km/s", "450.000 km/s", "600.000 km/s"],
+                "correct": 0
+            },
+            {
+                "id": 19,
+                "question": "Quantas cordas tem um violão tradicional?",
+                "options": ["4", "5", "6", "7"],
+                "correct": 2
+            },
+            {
+                "id": 20,
+                "question": "Qual é o maior mamífero do mundo?",
+                "options": ["Elefante africano", "Girafa", "Baleia-azul", "Hipopótamo"],
+                "correct": 2
+            },
+            {
+                "id": 21,
+                "question": "Em que ano começou a Segunda Guerra Mundial?",
+                "options": ["1937", "1939", "1941", "1943"],
+                "correct": 1
+            },
+            {
+                "id": 22,
+                "question": "Qual é a língua mais falada no mundo?",
+                "options": ["Inglês", "Mandarim", "Espanhol", "Hindi"],
+                "correct": 1
+            },
+            {
+                "id": 23,
+                "question": "Quantas estrelas tem a bandeira do Brasil?",
+                "options": ["25", "26", "27", "28"],
+                "correct": 2
+            },
+            {
+                "id": 24,
+                "question": "Quem escreveu 'O Pequeno Príncipe'?",
+                "options": ["Jules Verne", "Antoine de Saint-Exupéry", "Victor Hugo", "Alexandre Dumas"],
+                "correct": 1
+            },
+            {
+                "id": 25,
+                "question": "Qual é o metal mais condutor de eletricidade?",
+                "options": ["Ouro", "Prata", "Cobre", "Alumínio"],
+                "correct": 1
+            },
+            {
+                "id": 26,
+                "question": "Quantos jogadores tem um time de futebol em campo?",
+                "options": ["10", "11", "12", "13"],
+                "correct": 1
+            },
+            {
+                "id": 27,
+                "question": "Qual é o país mais populoso do mundo?",
+                "options": ["Índia", "Estados Unidos", "China", "Indonésia"],
+                "correct": 2
+            },
+            {
+                "id": 28,
+                "question": "Quem foi o inventor da lâmpada?",
+                "options": ["Nikola Tesla", "Thomas Edison", "Alexander Graham Bell", "Guglielmo Marconi"],
+                "correct": 1
+            },
+            {
+                "id": 29,
+                "question": "Qual é o maior osso do corpo humano?",
+                "options": ["Fêmur", "Tíbia", "Úmero", "Fíbula"],
+                "correct": 0
+            },
+            {
+                "id": 30,
+                "question": "Quantos planetas existem no sistema solar?",
+                "options": ["7", "8", "9", "10"],
+                "correct": 1
+            },
+            {
+                "id": 31,
+                "question": "Qual é a montanha mais alta do mundo?",
+                "options": ["K2", "Monte Everest", "Monte Kilimanjaro", "Monte McKinley"],
+                "correct": 1
+            },
+            {
+                "id": 32,
+                "question": "Quem foi o primeiro homem a viajar no espaço?",
+                "options": ["Neil Armstrong", "Yuri Gagarin", "John Glenn", "Alan Shepard"],
+                "correct": 1
+            }
+        ];
+
+        // App State
+        let currentQuestion = 0;
+        let userAnswers = Array(quizQuestions.length).fill(null);
+        let userData = {};
+        let registeredUsers = JSON.parse(localStorage.getItem("quizRegisteredUsers") || "[]");
+
+        // DOM Elements
+        const registrationSection = document.getElementById("registration");
+        const quizSection = document.getElementById("quiz");
+        const resultsSection = document.getElementById("results");
+        const adminPanel = document.getElementById("adminPanel");
+        const adminAccessBtn = document.getElementById("adminAccessBtn");
+        const closeAdminBtn = document.getElementById("closeAdminBtn");
+        const registrationForm = document.getElementById("registrationForm");
+        const progressBar = document.getElementById("progressBar");
+        const progressText = document.getElementById("progressText");
+        const questionNumber = document.getElementById("questionNumber");
+        const questionText = document.getElementById("questionText");
+        const optionsContainer = document.getElementById("optionsContainer");
+        const prevBtn = document.getElementById("prevBtn");
+        const nextBtn = document.getElementById("nextBtn");
+        const correctAnswersEl = document.getElementById("correctAnswers");
+        const wrongAnswersEl = document.getElementById("wrongAnswers");
+        const scorePercentageEl = document.getElementById("scorePercentage");
+        const restartBtn = document.getElementById("restartBtn");
+        const reviewBtn = document.getElementById("reviewBtn");
+        const totalUsersEl = document.getElementById("totalUsers");
+        const todayUsersEl = document.getElementById("todayUsers");
+        const weekUsersEl = document.getElementById("weekUsers");
+        const monthUsersEl = document.getElementById("monthUsers");
+        const usersTableBody = document.getElementById("usersTableBody");
+        const noDataMessage = document.getElementById("noDataMessage");
+        const exportCSVBtn = document.getElementById("exportCSVBtn");
+        const clearDataBtn = document.getElementById("clearDataBtn");
+        const refreshDataBtn = document.getElementById("refreshDataBtn");
+
+        // Event Listeners
+        registrationForm.addEventListener("submit", handleRegistration);
+        prevBtn.addEventListener("click", goToPreviousQuestion);
+        nextBtn.addEventListener("click", goToNextQuestion);
+        restartBtn.addEventListener("click", restartQuiz);
+        reviewBtn.addEventListener("click", reviewAnswers);
+        adminAccessBtn.addEventListener("click", openAdminPanel);
+        closeAdminBtn.addEventListener("click", closeAdminPanel);
+        exportCSVBtn.addEventListener("click", exportToCSV);
+        clearDataBtn.addEventListener("click", clearAllData);
+        refreshDataBtn.addEventListener("click", refreshAdminData);
+
+        // Functions
+        function handleRegistration(e) {
+            e.preventDefault();
+            
+            const phone = document.getElementById("phone").value;
+            const email = document.getElementById("email").value;
+            
+            if (!phone || !email) {
+                alert("Por favor, preencha todos os campos.");
+                return;
+            }
+            
+            // Check if user already exists
+            const existingUser = registeredUsers.find(user => 
+                user.phone === phone || user.email === email
+            );
+            
+            if (existingUser) {
+                alert("Este telefone ou e-mail já está cadastrado.");
+                return;
+            }
+            
+            userData = { 
+                phone, 
+                email,
+                registrationDate: new Date().toISOString(),
+                score: null,
+                completed: false
+            };
+            
+            // Save user to localStorage
+            registeredUsers.push(userData);
+            localStorage.setItem("quizRegisteredUsers", JSON.stringify(registeredUsers));
+            
+            startQuiz();
+        }
+
+        function startQuiz() {
+            registrationSection.classList.add("hidden");
+            quizSection.classList.remove("hidden");
+            loadQuestion(0);
+        }
+
+        function loadQuestion(index) {
+            const question = quizQuestions[index];
+            
+            // Update progress
+            const progress = ((index + 1) / quizQuestions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            progressText.textContent = `${index + 1}/${quizQuestions.length}`;
+            
+            // Update question info
+            questionNumber.textContent = `Questão ${index + 1}`;
+            questionText.textContent = question.question;
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            prevBtn.classList.toggle("opacity-50", index === 0);
+            prevBtn.classList.toggle("cursor-not-allowed", index === 0);
+            
+            nextBtn.textContent = index === quizQuestions.length - 1 ? "Finalizar" : "Próxima";
+            nextBtn.innerHTML = index === quizQuestions.length - 1 ? 
+                "Finalizar<i class=\"fas fa-flag-checkered ml-2\"></i>" : 
+                "Próxima<i class=\"fas fa-arrow-right ml-2\"></i>";
+            
+            // Create options
+            optionsContainer.innerHTML = "";
+            question.options.forEach((option, optionIndex) => {
+                const optionDiv = document.createElement("div");
+                optionDiv.className = `p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                    userAnswers[index] === optionIndex 
+                        ? "border-primary bg-blue-50" 
+                        : "border-gray-200 hover:border-primary"
+                }`;
+                optionDiv.textContent = option;
+                optionDiv.addEventListener("click", () => selectAnswer(optionIndex));
+                optionsContainer.appendChild(optionDiv);
+            });
+        }
+
+        function selectAnswer(optionIndex) {
+            userAnswers[currentQuestion] = optionIndex;
+            loadQuestion(currentQuestion);
+        }
+
+        function goToPreviousQuestion() {
+            if (currentQuestion > 0) {
+                currentQuestion--;
+                loadQuestion(currentQuestion);
+            }
+        }
+
+        function goToNextQuestion() {
+            if (userAnswers[currentQuestion] === null) {
+                alert("Por favor, selecione uma resposta antes de continuar.");
+                return;
+            }
+            
+            if (currentQuestion < quizQuestions.length - 1) {
+                currentQuestion++;
+                loadQuestion(currentQuestion);
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            quizSection.classList.add("hidden");
+            resultsSection.classList.remove("hidden");
+            
+            const correctAnswers = userAnswers.reduce((count, answer, index) => {
+                return count + (answer === quizQuestions[index].correct ? 1 : 0);
+            }, 0);
+            
+            const wrongAnswers = quizQuestions.length - correctAnswers;
+            const scorePercentage = Math.round((correctAnswers / quizQuestions.length) * 100);
+            
+            correctAnswersEl.textContent = correctAnswers;
+            wrongAnswersEl.textContent = wrongAnswers;
+            scorePercentageEl.textContent = `${scorePercentage}%`;
+            
+            // Update user score in localStorage
+            const currentUserIndex = registeredUsers.findIndex(user => 
+                user.phone === userData.phone && user.email === userData.email
+            );
+            
+            if (currentUserIndex !== -1) {
+                registeredUsers[currentUserIndex].score = scorePercentage;
+                registeredUsers[currentUserIndex].completed = true;
+                registeredUsers[currentUserIndex].completionDate = new Date().toISOString();
+                localStorage.setItem("quizRegisteredUsers", JSON.stringify(registeredUsers));
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            userAnswers = Array(quizQuestions.length).fill(null);
+            userData = {};
+            
+            resultsSection.classList.add("hidden");
+            registrationSection.classList.remove("hidden");
+            
+            // Reset form
+            registrationForm.reset();
+        }
+
+        function reviewAnswers() {
+            // Implement review functionality here
+            alert("Funcionalidade de revisão em desenvolvimento");
+        }
+
+        function openAdminPanel() {
+            registrationSection.classList.add("hidden");
+            quizSection.classList.add("hidden");
+            resultsSection.classList.add("hidden");
+            adminPanel.classList.remove("hidden");
+            refreshAdminData();
+        }
+
+        function closeAdminPanel() {
+            adminPanel.classList.add("hidden");
+            registrationSection.classList.remove("hidden");
+        }
+
+        function refreshAdminData() {
+            registeredUsers = JSON.parse(localStorage.getItem("quizRegisteredUsers") || "[]");
+            
+            // Update stats
+            totalUsersEl.textContent = registeredUsers.length;
+            
+            const today = new Date();
+            const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            const weekStart = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            
+            const todayUsers = registeredUsers.filter(user => 
+                new Date(user.registrationDate) >= todayStart
+            ).length;
+            
+            const weekUsers = registeredUsers.filter(user => 
+                new Date(user.registrationDate) >= weekStart
+            ).length;
+            
+            const monthUsers = registeredUsers.filter(user => 
+                new Date(user.registrationDate) >= monthStart
+            ).length;
+            
+            todayUsersEl.textContent = todayUsers;
+            weekUsersEl.textContent = weekUsers;
+            monthUsersEl.textContent = monthUsers;
+            
+            // Update users table
+            usersTableBody.innerHTML = "";
+            
+            if (registeredUsers.length === 0) {
+                noDataMessage.classList.remove("hidden");
+                return;
+            }
+            
+            noDataMessage.classList.add("hidden");
+            
+            registeredUsers.forEach((user, index) => {
+                const row = document.createElement("tr");
+                const registrationDate = new Date(user.registrationDate);
+                const formattedDate = registrationDate.toLocaleDateString("pt-BR");
+                const formattedTime = registrationDate.toLocaleTimeString("pt-BR");
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        ${index + 1}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${user.phone}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${user.email}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formattedDate} ${formattedTime}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium ${
+                        user.score !== null ? "text-green-600" : "text-gray-500"
+                    }">
+                        ${user.score !== null ? `${user.score}%` : "Não concluído"}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="deleteUser(${index})" class="text-red-600 hover:text-red-900">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        }
+
+        function deleteUser(index) {
+            if (confirm("Tem certeza que deseja excluir este usuário?")) {
+                registeredUsers.splice(index, 1);
+                localStorage.setItem("quizRegisteredUsers", JSON.stringify(registeredUsers));
+                refreshAdminData();
+            }
+        }
+
+        function exportToCSV() {
+            if (registeredUsers.length === 0) {
+                alert("Não há dados para exportar.");
+                return;
+            }
+            
+            const headers = ["Telefone", "E-mail", "Data de Cadastro", "Pontuação", "Concluído"];
+            const csvContent = [
+                headers.join(","),
+                ...registeredUsers.map(user => [
+                    `"${user.phone}"`,
+                    `"${user.email}"`,
+                    `"${new Date(user.registrationDate).toLocaleString("pt-BR")}"`,
+                    user.score !== null ? user.score : "N/A",
+                    user.completed ? "Sim" : "Não"
+                ].join(","))
+            ].join("\n");
+            
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `usuarios-quiz-${new Date().toISOString().split("T")[0]}.csv`);
+            link.style.visibility = "hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearAllData() {
+            if (confirm("Tem certeza que deseja excluir TODOS os dados? Esta ação não pode ser desfeita.")) {
+                localStorage.removeItem("quizRegisteredUsers");
+                registeredUsers = [];
+                refreshAdminData();
+                alert("Todos os dados foram excluídos com sucesso.");
+            }
+        }
+
+        // Initialize phone input mask
+        document.getElementById("phone").addEventListener("input", function(e) {
+            let value = e.target.value.replace(/\D/g, "");
+            if (value.length > 11) value = value.substring(0, 11);
+            
+            if (value.length > 10) {
+                value = value.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3");
+            } else if (value.length > 6) {
+                value = value.replace(/(\d{2})(\d{4})(\d{0,4})/, "($1) $2-$3");
+            } else if (value.length > 2) {
+                value = value.replace(/(\d{2})(\d{0,5})/, "($1) $2");
+            } else if (value.length > 0) {
+                value = value.replace(/(\d{0,2})/, "($1");
+            }
+            
+            e.target.value = value;
+        });
+
+        // Make deleteUser function available globally
+        window.deleteUser = deleteUser;
+    </script>
+</body>
+</html>
